@@ -5,10 +5,10 @@ import 'package:uuid/uuid.dart' show Uuid;
 
 /// A portion of the data held within a node.
 class Field {
-  String name, _type, _prefix, _suffix;
+  late String name, _type, _prefix, _suffix;
 
   Field(Map<String, dynamic> jsonData) {
-    name = jsonData['fieldname'];
+    name = jsonData['fieldname'] ?? '';
     _type = jsonData['fieldtype'] ?? 'Text';
     _prefix = jsonData['prefix'] ?? '';
     _suffix = jsonData['suffix'] ?? '';
@@ -49,19 +49,21 @@ class Field {
 
 /// Holds fields and output definitions for a node type.
 class NodeFormat {
-  String name;
-  bool _spaceBetween, _formatHtml;
-  ParsedLine _titleLine;
-  List<ParsedLine> _outputLines;
+  late String name;
+  late bool _spaceBetween, _formatHtml;
+  late ParsedLine _titleLine;
+  var _outputLines = <ParsedLine>[];
   var _fieldMap = <String, Field>{};
 
   NodeFormat(Map<String, dynamic> jsonData) {
-    name = jsonData['formatname'];
+    name = jsonData['formatname'] ?? '';
     _spaceBetween = jsonData['spacebetween'] ?? true;
     _formatHtml = jsonData['formathtml'] ?? false;
     _titleLine = ParsedLine(jsonData['titleline'] ?? '');
-    _outputLines = [for (var s in jsonData['outputlines'] ?? '') ParsedLine(s)];
-    for (var fieldData in jsonData['fields']) {
+    for (var lineString in jsonData['outputlines'] ?? []) {
+      _outputLines.add(ParsedLine(lineString ?? ''));
+    }
+    for (var fieldData in jsonData['fields'] ?? []) {
       var field = Field(fieldData);
       _fieldMap[field.name] = field;
     }
@@ -95,23 +97,23 @@ class NodeFormat {
 
 /// A single line of output, broken into fields and static text.
 class ParsedLine {
-  final String _unparsedLine;
-  List<String> _textSegments;
-  List<Field> _lineFields;
+  late final String _unparsedLine;
+  var _textSegments = <String>[];
+  var _lineFields = <Field>[];
 
   ParsedLine(this._unparsedLine);
 
   void parseLine(Map<String, Field> fieldMap) {
-    _textSegments = [];
-    _lineFields = [];
+    _textSegments.clear();
+    _lineFields.clear();
     var start = 0;
     var regExp = RegExp(r'{\*(\**|\?|!|&|#)([\w_\-.]+)\*}');
     for (var match in regExp.allMatches(_unparsedLine, start)) {
       _textSegments.add(_unparsedLine.substring(start, match.start));
       if (match.group(1) == '' && fieldMap.containsKey(match.group(2))) {
-        _lineFields.add(fieldMap[match.group(2)]);
+        _lineFields.add(fieldMap[match.group(2)!]!);
       } else {
-        _textSegments.add(match.group(0));
+        _textSegments.add(match.group(0)!);
       }
       start = match.end;
     }
@@ -155,34 +157,45 @@ class RankedSpot {
 
 /// The data and children for a node in the tree.
 class TreeNode {
-  NodeFormat formatRef;
-  String uId;
-  Map<String, String> data;
+  late NodeFormat formatRef;
+  late String uId;
+  late Map<String, String> data;
   var childList = <TreeNode>[];
-  List<String> _tmpChildRefs;
+  late List<String> _tmpChildRefs;
   var spotRefs = <TreeSpot>{};
 
   TreeNode(Map<String, dynamic> json, Map<String, NodeFormat> treeFormats) {
-    formatRef = treeFormats[json['format']];
+    var formatName = json['format'];
+    if (treeFormats[formatName] != null) {
+      formatRef = treeFormats[formatName]!;
+    } else {
+      formatRef = NodeFormat({});
+    }
     uId = json['uid'] ?? Uuid().v1().replaceAll('-', '');
     data = json['data']?.cast<String, String>() ?? {};
     _tmpChildRefs = json['children']?.cast<String>() ?? [];
   }
 
   void assignRefs(Map<String, TreeNode> nodeDict) {
-    childList = [for (var id in _tmpChildRefs) nodeDict[id]];
+    for (var id in _tmpChildRefs) {
+      var node = nodeDict[id];
+      if (node != null) {
+        childList.add(node);
+      }
+    }
   }
 
-  void generateSpots(TreeSpot parentSpot) {
+  void generateSpots(TreeSpot? parentSpot) {
     var spot = TreeSpot(this, parentSpot);
     spotRefs.add(spot);
     childList.forEach((node) => node.generateSpots(spot));
   }
 
-  TreeSpot matchedSpot(TreeSpot parentSpot) {
+  TreeSpot? matchedSpot(TreeSpot? parentSpot) {
     for (var spot in spotRefs) {
       if (spot.parentSpot == parentSpot) return spot;
     }
+    return null;
   }
 }
 
@@ -191,14 +204,17 @@ class TreeNode {
 /// Cloned nodes have multiple spots.
 class TreeSpot {
   TreeNode nodeRef;
-  TreeSpot parentSpot;
+  TreeSpot? parentSpot;
 
   TreeSpot(this.nodeRef, this.parentSpot);
 
   List<TreeSpot> childSpots() {
-    return [
-      for (var childNode in nodeRef.childList) childNode.matchedSpot(this)
-    ];
+    var spots = <TreeSpot>[];
+    for (var childNode in nodeRef.childList) {
+      var newSpot = childNode.matchedSpot(this);
+      if (newSpot != null) spots.add(newSpot);
+    }
+    return spots;
   }
 
   Iterable<RankedSpot> outputDescendGen(
@@ -237,12 +253,17 @@ class TreeStructure {
       nodeDict[node.uId] = node;
     }
     nodeDict.values.forEach((node) => node.assignRefs(nodeDict));
-    childList = [for (var id in jsonData['properties']['topnodes']) nodeDict[id]];
-    childList.forEach((node) => node.generateSpots(null));
+    for (var id in jsonData['properties']['topnodes']) {
+      var node = nodeDict[id];
+      if (node != null) {
+        childList.add(node);
+        node.generateSpots(null);
+      }
+    }
   }
 
   List<TreeSpot> rootSpots() {
-    return [for (var node in childList) node.matchedSpot(null)];
+    return [for (var node in childList) node.matchedSpot(null)!];
   }
 
   Iterable<String> titles() sync* {
