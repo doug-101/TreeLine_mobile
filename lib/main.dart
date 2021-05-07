@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'src/tree_core.dart';
 
 void main() {
@@ -28,7 +27,8 @@ class _FileControlState extends State<FileControl> {
             child: ListTile(
               title: Text('File Browse'),
               onTap: () async {
-                FilePickerResult? result = await FilePicker.platform.pickFiles();
+                FilePickerResult? result =
+                    await FilePicker.platform.pickFiles();
                 if (result != null) {
                   PlatformFile fileObj = result.files.single;
                   Navigator.push(
@@ -37,8 +37,8 @@ class _FileControlState extends State<FileControl> {
                       builder: (context) => TreeView(fileObj: fileObj),
                     ),
                   );
-                  //FilePicker.platform.clearTemporaryFiles();
-                };
+                }
+                ;
               },
             ),
           ),
@@ -63,15 +63,34 @@ class _TreeViewState extends State<TreeView> {
   final _leafIcon = Icon(Icons.circle, size: 8.0, color: Colors.blue);
   late final _treeStructure;
   final _openSpots = <TreeSpot>{};
+  late final headerName;
   void initState() {
     super.initState();
     _treeStructure = TreeStructure(widget.fileObj.path!);
+    var fileName = widget.fileObj.name!;
+    if (widget.fileObj.extension != null) {
+      fileName = fileName.substring(
+          0, fileName.length - widget.fileObj.extension!.length - 1);
+    }
+    headerName = 'TreeLine - ' + fileName;
+    FilePicker.platform.clearTemporaryFiles();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('TreeLine Mobile'),
+        automaticallyImplyLeading: false,
+        title: Text(headerName),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: 'Close File',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
       body: ListView(
         children: _itemRows(),
@@ -107,6 +126,14 @@ class _TreeViewState extends State<TreeView> {
             });
           }
         },
+        onLongPress: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => _DetailView(node: node),
+            ),
+          );
+        },
         child: Row(children: <Widget>[
           node.childList.isEmpty
               ? Container(
@@ -116,6 +143,28 @@ class _TreeViewState extends State<TreeView> {
                   : _closedIcon,
           Expanded(child: Text(text, softWrap: true)),
         ]),
+      ),
+    );
+  }
+}
+
+class _DetailView extends StatelessWidget {
+  final TreeNode node;
+
+  _DetailView({Key? key, required this.node}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(node.formatRef.formatTitle(node)),
+      ),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: const EdgeInsets.all(10.0),
+          child: Text(node.formatRef.formatOutput(node).join('\n')),
+        ),
       ),
     );
   }

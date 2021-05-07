@@ -81,7 +81,7 @@ class NodeFormat {
   }
 
   List<String> formatOutput(TreeNode node,
-      {bool skipBlanks: true, bool noHtml = false}) {
+      {bool skipBlanks: true, bool noHtml = true}) {
     return [
       for (var outLine in _outputLines)
         outLine.formattedLine(node,
