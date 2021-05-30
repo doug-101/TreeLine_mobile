@@ -67,7 +67,7 @@ class _TreeViewState extends State<TreeView> {
   void initState() {
     super.initState();
     _treeStructure = TreeStructure(widget.fileObj.path!);
-    var fileName = widget.fileObj.name!;
+    var fileName = widget.fileObj.name;
     if (widget.fileObj.extension != null) {
       fileName = fileName.substring(
           0, fileName.length - widget.fileObj.extension!.length - 1);
@@ -159,13 +159,34 @@ class _DetailView extends StatelessWidget {
       appBar: AppBar(
         title: Text(node.formatRef.formatTitle(node)),
       ),
-      body: Align(
-        alignment: Alignment.topCenter,
+      body: ListView(
+        children: _detailRows(node),
+      ),
+    );
+  }
+
+  List<Widget> _detailRows(TreeNode node) {
+    final items = <Widget>[];
+    items.add(
+      Card(
         child: Container(
           margin: const EdgeInsets.all(10.0),
           child: Text(node.formatRef.formatOutput(node).join('\n')),
         ),
       ),
     );
+    for (var childNode in node.childList) {
+      items.add(
+        Card(
+          child: Container(
+            margin: const EdgeInsets.all(10.0),
+            child: Text(childNode.formatRef.formatOutput(childNode).join('\n')),
+          ),
+          margin: EdgeInsets.fromLTRB(20.0, 5.0, 5.0, 5.0),
+        ),
+      );
+    }
+    ;
+    return items;
   }
 }
