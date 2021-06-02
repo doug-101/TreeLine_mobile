@@ -38,7 +38,7 @@ class Field {
         _suffix = removeMarkup(_suffix);
       }
     }
-    if (!formatHtml) {
+    if (!formatHtml && !noHtml) {
       var htmlEscape = HtmlEscape();
       _prefix = htmlEscape.convert(_prefix);
       _suffix = htmlEscape.convert(_suffix);
@@ -81,7 +81,7 @@ class NodeFormat {
   }
 
   List<String> formatOutput(TreeNode node,
-      {bool skipBlanks: true, bool noHtml = true}) {
+      {bool skipBlanks = true, bool noHtml = true}) {
     return [
       for (var outLine in _outputLines)
         outLine.formattedLine(node,
