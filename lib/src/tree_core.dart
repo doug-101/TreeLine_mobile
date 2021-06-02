@@ -34,16 +34,16 @@ class Field {
     if (noHtml) {
       storedText = removeMarkup(storedText);
       if (formatHtml) {
-        _prefix = removeMarkup(_prefix);
-        _suffix = removeMarkup(_suffix);
+        localPrefix = removeMarkup(localPrefix);
+        localSuffix = removeMarkup(localSuffix);
       }
     }
     if (!formatHtml && !noHtml) {
       var htmlEscape = HtmlEscape();
-      _prefix = htmlEscape.convert(_prefix);
-      _suffix = htmlEscape.convert(_suffix);
+      localPrefix = htmlEscape.convert(localPrefix);
+      localSuffix = htmlEscape.convert(localSuffix);
     }
-    return '$_prefix$storedText$_suffix';
+    return '$localPrefix$storedText$localSuffix';
   }
 }
 
