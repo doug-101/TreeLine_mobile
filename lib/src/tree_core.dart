@@ -2,16 +2,21 @@ import 'dart:io' show File;
 import 'dart:convert' show jsonDecode, HtmlEscape;
 
 import 'package:uuid/uuid.dart' show Uuid;
+import 'package:intl/intl.dart' show DateFormat;
 
 /// A portion of the data held within a node.
 class Field {
-  late String name, _type, _prefix, _suffix;
+  late String name, _type, _format, _prefix, _suffix;
 
   Field(Map<String, dynamic> jsonData) {
     name = jsonData['fieldname'] ?? '';
     _type = jsonData['fieldtype'] ?? 'Text';
+    _format = jsonData['format'] ?? '';
     _prefix = jsonData['prefix'] ?? '';
     _suffix = jsonData['suffix'] ?? '';
+    if (_type == 'Date') {
+      _format = adjustDateTimeFormat(_format);
+    }
   }
 
   String outputText(TreeNode node,
@@ -26,6 +31,12 @@ class Field {
       {bool oneLine = false, bool noHtml = false, bool formatHtml = false}) {
     var localPrefix = _prefix;
     var localSuffix = _suffix;
+    if (_type == 'Date') {
+      var inputDateFormat = DateFormat('yyyy-MM-dd');
+      var date = inputDateFormat.parse(storedText);
+      var outputDateFormat = DateFormat(_format);
+      storedText = outputDateFormat.format(date);
+    }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)
               .matchAsPrefix(storedText)
@@ -299,4 +310,30 @@ String removeMarkup(String text) {
   text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
   text = text.replaceAll(RegExp(r'<.*?>'), '');
   return text;
+}
+
+String adjustDateTimeFormat(String origFormat) {
+  var replacements = {
+    '%-d': 'd',
+    '%d': 'dd',
+    '%a': 'EEE',
+    '%A': 'EEEE',
+    '%-m': 'M',
+    '%m': 'MM',
+    '%b': 'MMM',
+    '%B': 'MMMM',
+    '%y': 'yy',
+    '%Y': 'yyyy',
+    '%-j': 'D',
+    '%%': "'%'",
+  };
+  var regExp = RegExp(r'%-?[daAmbByYj%]');
+  var newFormat = origFormat.replaceAllMapped(
+      regExp,
+      (Match m) => replacements[m.group(0)] != null
+          ? "'${replacements[m.group(0)]}'"
+          : m.group(0)!);
+  newFormat = "'$newFormat'";
+  newFormat = newFormat.replaceAll("''", "");
+  return newFormat;
 }
