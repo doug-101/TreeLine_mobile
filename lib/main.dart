@@ -38,7 +38,6 @@ class _FileControlState extends State<FileControl> {
                     ),
                   );
                 }
-                ;
               },
             ),
           ),
@@ -186,7 +185,6 @@ class _DetailView extends StatelessWidget {
         ),
       );
     }
-    ;
     return items;
   }
 }

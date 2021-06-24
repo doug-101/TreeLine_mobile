@@ -14,7 +14,7 @@ class Field {
     _format = jsonData['format'] ?? '';
     _prefix = jsonData['prefix'] ?? '';
     _suffix = jsonData['suffix'] ?? '';
-    if (_type == 'Date') {
+    if ({'Date', 'Time', 'DateTime'}.contains(_type)) {
       _format = adjustDateTimeFormat(_format);
     }
   }
@@ -36,6 +36,16 @@ class Field {
       var date = inputDateFormat.parse(storedText);
       var outputDateFormat = DateFormat(_format);
       storedText = outputDateFormat.format(date);
+    } else if (_type == 'Time') {
+      var inputTimeFormat = DateFormat('HH:mm:ss.S');
+      var time = inputTimeFormat.parse(storedText);
+      var outputTimeFormat = DateFormat(_format);
+      storedText = outputTimeFormat.format(time);
+    } else if (_type == 'DateTime') {
+      var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.S');
+      var dateTime = inputFormat.parse(storedText);
+      var outputFormat = DateFormat(_format);
+      storedText = outputFormat.format(dateTime);
     }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)
@@ -325,9 +335,19 @@ String adjustDateTimeFormat(String origFormat) {
     '%y': 'yy',
     '%Y': 'yyyy',
     '%-j': 'D',
+    '%-H': 'H',
+    '%H': 'HH',
+    '%-I': 'h',
+    '%I': 'hh',
+    '%-M': 'm',
+    '%M': 'mm',
+    '%-S': 's',
+    '%S': 'ss',
+    '%f': 'S',
+    '%p': 'a',
     '%%': "'%'",
   };
-  var regExp = RegExp(r'%-?[daAmbByYj%]');
+  var regExp = RegExp(r'%-?[daAmbByYjHIMSfp%]');
   var newFormat = origFormat.replaceAllMapped(
       regExp,
       (Match m) => replacements[m.group(0)] != null
