@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' show DateFormat;
 /// A portion of the data held within a node.
 class Field {
   late String name, _type, _format, _prefix, _suffix;
+  var boolFormat = {true: 'yes', false: 'no'};
 
   Field(Map<String, dynamic> jsonData) {
     name = jsonData['fieldname'] ?? '';
@@ -16,6 +17,15 @@ class Field {
     _suffix = jsonData['suffix'] ?? '';
     if ({'Date', 'Time', 'DateTime'}.contains(_type)) {
       _format = adjustDateTimeFormat(_format);
+    } else if (_type == 'Boolean') {
+      var tmpFormat = _format.replaceAll('//', '\0');
+      var idx = tmpFormat.indexOf('/');
+      if (idx >= 0) {
+        boolFormat = {
+          true: tmpFormat.substring(0, idx).trim().replaceAll('\0', '/'),
+          false: tmpFormat.substring(idx + 1).trim().replaceAll('\0', '/')
+        };
+      }
     }
   }
 
@@ -46,6 +56,17 @@ class Field {
       var dateTime = inputFormat.parse(storedText);
       var outputFormat = DateFormat(_format);
       storedText = outputFormat.format(dateTime);
+    } else if (_type == 'Boolean') {
+      switch (storedText.toLowerCase()) {
+        case 'true':
+        case 'yes':
+          storedText = boolFormat[true]!;
+          break;
+        case 'false':
+        case 'no':
+          storedText = boolFormat[false]!;
+          break;
+      }
     }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)
@@ -323,7 +344,7 @@ String removeMarkup(String text) {
 }
 
 String adjustDateTimeFormat(String origFormat) {
-  var replacements = {
+  final replacements = const {
     '%-d': 'd',
     '%d': 'dd',
     '%a': 'EEE',
@@ -347,7 +368,7 @@ String adjustDateTimeFormat(String origFormat) {
     '%p': 'a',
     '%%': "'%'",
   };
-  var regExp = RegExp(r'%-?[daAmbByYjHIMSfp%]');
+  final regExp = RegExp(r'%-?[daAmbByYjHIMSfp%]');
   var newFormat = origFormat.replaceAllMapped(
       regExp,
       (Match m) => replacements[m.group(0)] != null
