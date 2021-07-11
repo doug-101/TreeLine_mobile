@@ -1,7 +1,7 @@
 import 'dart:convert' show HtmlEscape;
 import 'package:intl/intl.dart' show DateFormat;
 import 'tree_struct.dart' show TreeNode;
-
+import 'gen_number.dart';
 
 /// A portion of the data held within a node.
 class Field {
@@ -40,32 +40,43 @@ class Field {
       {bool oneLine = false, bool noHtml = false, bool formatHtml = false}) {
     var localPrefix = _prefix;
     var localSuffix = _suffix;
-    if (_type == 'Date') {
-      var inputDateFormat = DateFormat('yyyy-MM-dd');
-      var date = inputDateFormat.parse(storedText);
-      var outputDateFormat = DateFormat(_format);
-      storedText = outputDateFormat.format(date);
-    } else if (_type == 'Time') {
-      var inputTimeFormat = DateFormat('HH:mm:ss.S');
-      var time = inputTimeFormat.parse(storedText);
-      var outputTimeFormat = DateFormat(_format);
-      storedText = outputTimeFormat.format(time);
-    } else if (_type == 'DateTime') {
-      var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.S');
-      var dateTime = inputFormat.parse(storedText);
-      var outputFormat = DateFormat(_format);
-      storedText = outputFormat.format(dateTime);
-    } else if (_type == 'Boolean') {
-      switch (storedText.toLowerCase()) {
-        case 'true':
-        case 'yes':
-          storedText = boolFormat[true]!;
-          break;
-        case 'false':
-        case 'no':
-          storedText = boolFormat[false]!;
-          break;
-      }
+    switch (_type) {
+      case 'Date':
+        var inputDateFormat = DateFormat('yyyy-MM-dd');
+        var date = inputDateFormat.parse(storedText);
+        var outputDateFormat = DateFormat(_format);
+        storedText = outputDateFormat.format(date);
+        break;
+      case 'Time':
+        var inputTimeFormat = DateFormat('HH:mm:ss.S');
+        var time = inputTimeFormat.parse(storedText);
+        var outputTimeFormat = DateFormat(_format);
+        storedText = outputTimeFormat.format(time);
+        break;
+      case 'DateTime':
+        var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.S');
+        var dateTime = inputFormat.parse(storedText);
+        var outputFormat = DateFormat(_format);
+        storedText = outputFormat.format(dateTime);
+        break;
+      case 'Boolean':
+        switch (storedText.toLowerCase()) {
+          case 'true':
+          case 'yes':
+            storedText = boolFormat[true]!;
+            break;
+          case 'false':
+          case 'no':
+            storedText = boolFormat[false]!;
+            break;
+        }
+        break;
+      case 'Number':
+        try {
+          var value = num.parse(storedText);
+          storedText = numString(value, _format);
+        } on FormatException {}
+        break;
     }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)
@@ -87,7 +98,6 @@ class Field {
     return '$localPrefix$storedText$localSuffix';
   }
 }
-
 
 String removeMarkup(String text) {
   text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
