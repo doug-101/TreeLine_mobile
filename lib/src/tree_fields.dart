@@ -1,7 +1,8 @@
 import 'dart:convert' show HtmlEscape;
 import 'package:intl/intl.dart' show DateFormat;
-import 'tree_struct.dart' show TreeNode;
 import 'gen_number.dart';
+import 'numbering.dart';
+import 'tree_struct.dart' show TreeNode;
 
 /// A portion of the data held within a node.
 class Field {
@@ -76,6 +77,9 @@ class Field {
           var value = num.parse(storedText);
           storedText = numString(value, _format);
         } on FormatException {}
+        break;
+      case 'Numbering':
+        storedText = NumberingGroup(_format).numString(storedText);
         break;
     }
     if (oneLine)
