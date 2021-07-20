@@ -7,7 +7,7 @@ import 'tree_fields.dart';
 
 /// Holds fields and output definitions for a node type.
 class NodeFormat {
-  late String name;
+  late String name, outputSeparator;
   late bool _spaceBetween, _formatHtml;
   late ParsedLine _titleLine;
   var _outputLines = <ParsedLine>[];
@@ -15,6 +15,7 @@ class NodeFormat {
 
   NodeFormat(Map<String, dynamic> jsonData) {
     name = jsonData['formatname'] ?? '';
+    outputSeparator = jsonData['outputsep'] ?? ', ';
     _spaceBetween = jsonData['spacebetween'] ?? true;
     _formatHtml = jsonData['formathtml'] ?? false;
     _titleLine = ParsedLine(jsonData['titleline'] ?? '');

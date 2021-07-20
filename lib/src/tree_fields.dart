@@ -8,6 +8,7 @@ import 'tree_struct.dart' show TreeNode;
 class Field {
   late String name, _type, _format, _prefix, _suffix;
   var boolFormat = {true: 'yes', false: 'no'};
+  var _outputSeparator = '';
 
   Field(Map<String, dynamic> jsonData) {
     name = jsonData['fieldname'] ?? '';
@@ -33,6 +34,7 @@ class Field {
       {bool oneLine = false, bool noHtml = false, bool formatHtml = false}) {
     var storedText = node.data[name] ?? '';
     if (storedText.isEmpty) return '';
+    _outputSeparator = node.formatRef.outputSeparator;
     return _formatOutput(storedText,
         oneLine: oneLine, noHtml: noHtml, formatHtml: formatHtml);
   }
@@ -81,6 +83,11 @@ class Field {
       case 'Numbering':
         storedText = NumberingGroup(_format).numString(storedText);
         break;
+      case 'Combination':
+      case 'AutoCombination':
+        var selections = _splitText(storedText, '/');
+        storedText = selections.join(_outputSeparator);
+        break;
     }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)
@@ -107,6 +114,20 @@ String removeMarkup(String text) {
   text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
   text = text.replaceAll(RegExp(r'<.*?>'), '');
   return text;
+}
+
+/// Split text using the given delimitter and return a list.
+///
+/// Double delimitters are not split, empty parts are ignored and
+/// duplicates are removed.
+List<String> _splitText(String textStr, String delimitChar) {
+  var result = <String>[];
+  textStr = textStr.replaceAll(delimitChar * 2, '\0');
+  for (var text in textStr.split(delimitChar)) {
+    text = text.replaceAll('\0', delimitChar);
+    if (text.isNotEmpty && !result.contains(text)) result.add(text);
+  }
+  return result;
 }
 
 String _adjustDateTimeFormat(String origFormat) {
