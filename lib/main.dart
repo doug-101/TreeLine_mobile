@@ -136,10 +136,14 @@ class _TreeViewState extends State<TreeView> {
         child: Row(children: <Widget>[
           node.childList.isEmpty
               ? Container(
-                  child: _leafIcon, padding: EdgeInsets.only(right: 5.0))
-              : _openSpots.contains(rankedSpot.spotRef)
-                  ? _openIcon
-                  : _closedIcon,
+                  child: _leafIcon,
+                  padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                )
+              : Container(
+                  child: _openSpots.contains(rankedSpot.spotRef)
+                      ? _openIcon
+                      : _closedIcon,
+                ),
           Expanded(child: Text(text, softWrap: true)),
         ]),
       ),
