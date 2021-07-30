@@ -1,5 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'src/tree_struct.dart';
 
 void main() {
@@ -67,9 +69,10 @@ class _TreeViewState extends State<TreeView> {
     super.initState();
     _treeStructure = TreeStructure(widget.fileObj.path!);
     var fileName = widget.fileObj.name;
-    if (widget.fileObj.extension != null) {
-      fileName = fileName.substring(
-          0, fileName.length - widget.fileObj.extension!.length - 1);
+    var ext = widget.fileObj.extension;
+    if (ext != null) {
+      var endPos = fileName.length - ext.length - 1;
+      if (endPos > 0) fileName = fileName.substring(0, endPos);
     }
     headerName = 'TreeLine - ' + fileName;
     FilePicker.platform.clearTemporaryFiles();
@@ -174,7 +177,10 @@ class _DetailView extends StatelessWidget {
       Card(
         child: Container(
           margin: const EdgeInsets.all(10.0),
-          child: Text(node.formatRef.formatOutput(node).join('\n')),
+          child: Html(
+            data: node.formatRef.formatOutput(node).join('<br />'),
+            onLinkTap: _launchURL,
+          ),
         ),
       ),
     );
@@ -183,12 +189,21 @@ class _DetailView extends StatelessWidget {
         Card(
           child: Container(
             margin: const EdgeInsets.all(10.0),
-            child: Text(childNode.formatRef.formatOutput(childNode).join('\n')),
+            child: Html(
+              data: childNode.formatRef.formatOutput(childNode).join('<br />'),
+              onLinkTap: _launchURL,
+            ),
           ),
           margin: EdgeInsets.fromLTRB(20.0, 5.0, 5.0, 5.0),
         ),
       );
     }
     return items;
+  }
+}
+
+void _launchURL(String? url, _, __, ___) async {
+  if (url != null && await canLaunch(url)) {
+    await launch(url);
   }
 }

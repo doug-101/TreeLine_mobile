@@ -4,6 +4,8 @@ import 'gen_number.dart';
 import 'numbering.dart';
 import 'tree_struct.dart' show TreeNode;
 
+var _errorStr = '#####';
+
 /// A portion of the data held within a node.
 class Field {
   late String name, _type, _format, _prefix, _suffix;
@@ -43,51 +45,55 @@ class Field {
       {bool oneLine = false, bool noHtml = false, bool formatHtml = false}) {
     var localPrefix = _prefix;
     var localSuffix = _suffix;
-    switch (_type) {
-      case 'Date':
-        var inputDateFormat = DateFormat('yyyy-MM-dd');
-        var date = inputDateFormat.parse(storedText);
-        var outputDateFormat = DateFormat(_format);
-        storedText = outputDateFormat.format(date);
-        break;
-      case 'Time':
-        var inputTimeFormat = DateFormat('HH:mm:ss.S');
-        var time = inputTimeFormat.parse(storedText);
-        var outputTimeFormat = DateFormat(_format);
-        storedText = outputTimeFormat.format(time);
-        break;
-      case 'DateTime':
-        var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.S');
-        var dateTime = inputFormat.parse(storedText);
-        var outputFormat = DateFormat(_format);
-        storedText = outputFormat.format(dateTime);
-        break;
-      case 'Boolean':
-        switch (storedText.toLowerCase()) {
-          case 'true':
-          case 'yes':
-            storedText = boolFormat[true]!;
-            break;
-          case 'false':
-          case 'no':
-            storedText = boolFormat[false]!;
-            break;
-        }
-        break;
-      case 'Number':
-        try {
+    try {
+      switch (_type) {
+        case 'Date':
+          var inputDateFormat = DateFormat('yyyy-MM-dd');
+          var date = inputDateFormat.parse(storedText);
+          var outputDateFormat = DateFormat(_format);
+          storedText = outputDateFormat.format(date);
+          break;
+        case 'Time':
+          var inputTimeFormat = DateFormat('HH:mm:ss.S');
+          var time = inputTimeFormat.parse(storedText);
+          var outputTimeFormat = DateFormat(_format);
+          storedText = outputTimeFormat.format(time);
+          break;
+        case 'DateTime':
+          var inputFormat = DateFormat('yyyy-MM-dd HH:mm:ss.S');
+          var dateTime = inputFormat.parse(storedText);
+          var outputFormat = DateFormat(_format);
+          storedText = outputFormat.format(dateTime);
+          break;
+        case 'Boolean':
+          switch (storedText.toLowerCase()) {
+            case 'true':
+            case 'yes':
+              storedText = boolFormat[true]!;
+              break;
+            case 'false':
+            case 'no':
+              storedText = boolFormat[false]!;
+              break;
+            default:
+              storedText = _errorStr;
+          }
+          break;
+        case 'Number':
           var value = num.parse(storedText);
           storedText = numString(value, _format);
-        } on FormatException {}
-        break;
-      case 'Numbering':
-        storedText = NumberingGroup(_format).numString(storedText);
-        break;
-      case 'Combination':
-      case 'AutoCombination':
-        var selections = _splitText(storedText, '/');
-        storedText = selections.join(_outputSeparator);
-        break;
+          break;
+        case 'Numbering':
+          storedText = NumberingGroup(_format).numString(storedText);
+          break;
+        case 'Combination':
+        case 'AutoCombination':
+          var selections = _splitText(storedText, '/');
+          storedText = selections.join(_outputSeparator);
+          break;
+      }
+    } on FormatException {
+      storedText = _errorStr;
     }
     if (oneLine)
       storedText = RegExp(r'(.+?)<br\s*/?>', caseSensitive: false)

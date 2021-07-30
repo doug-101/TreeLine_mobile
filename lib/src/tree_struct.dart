@@ -4,7 +4,6 @@ import 'dart:convert' show jsonDecode, HtmlEscape;
 import 'package:uuid/uuid.dart' show Uuid;
 import 'tree_fields.dart';
 
-
 /// Holds fields and output definitions for a node type.
 class NodeFormat {
   late String name, outputSeparator;
@@ -40,7 +39,7 @@ class NodeFormat {
   }
 
   List<String> formatOutput(TreeNode node,
-      {bool skipBlanks = true, bool noHtml = true}) {
+      {bool skipBlanks = true, bool noHtml = false}) {
     return [
       for (var outLine in _outputLines)
         outLine.formattedLine(node,
@@ -202,23 +201,25 @@ class TreeStructure {
   var childList = <TreeNode>[];
 
   TreeStructure(String filename) {
-    var jsonData = jsonDecode(File(filename).readAsStringSync());
-    for (var formatData in jsonData['formats']) {
-      var nodeFormat = NodeFormat(formatData);
-      treeFormats[nodeFormat.name] = nodeFormat;
-    }
-    for (var nodeInfo in jsonData['nodes']) {
-      var node = TreeNode(nodeInfo, treeFormats);
-      nodeDict[node.uId] = node;
-    }
-    nodeDict.values.forEach((node) => node.assignRefs(nodeDict));
-    for (var id in jsonData['properties']['topnodes']) {
-      var node = nodeDict[id];
-      if (node != null) {
-        childList.add(node);
-        node.generateSpots(null);
+    try {
+      var jsonData = jsonDecode(File(filename).readAsStringSync());
+      for (var formatData in jsonData['formats']) {
+        var nodeFormat = NodeFormat(formatData);
+        treeFormats[nodeFormat.name] = nodeFormat;
       }
-    }
+      for (var nodeInfo in jsonData['nodes']) {
+        var node = TreeNode(nodeInfo, treeFormats);
+        nodeDict[node.uId] = node;
+      }
+      nodeDict.values.forEach((node) => node.assignRefs(nodeDict));
+      for (var id in jsonData['properties']['topnodes']) {
+        var node = nodeDict[id];
+        if (node != null) {
+          childList.add(node);
+          node.generateSpots(null);
+        }
+      }
+    } on FormatException {}
   }
 
   List<TreeSpot> rootSpots() {

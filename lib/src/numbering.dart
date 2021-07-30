@@ -19,21 +19,21 @@ class NumberingGroup {
   String numString(String inputNum) {
     if (inputNum.isEmpty) return '';
     var inputNums = [
-      for (var numStr in inputNum.split('.')) int.tryParse(numStr)
+      for (var numStr in inputNum.split('.')) int.parse(numStr)
     ];
     if (isSectionStyle) {
       var results = <String>[];
       for (int i = 0; i < inputNums.length; i++) {
         var basicFormat =
             i < basicFormats.length ? basicFormats[i] : basicFormats.last;
-        results.add(basicFormat.numString(inputNums[i]!));
+        results.add(basicFormat.numString(inputNums[i]));
       }
       return results.join('.');
     } else {
       var level = inputNums.length - 1;
       var basicFormat =
           level < basicFormats.length ? basicFormats[level] : basicFormats.last;
-      return basicFormat.numString(inputNums[level]!);
+      return basicFormat.numString(inputNums[level]);
     }
   }
 }
