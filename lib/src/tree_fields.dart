@@ -1,3 +1,8 @@
+// tree_fields.dart, provides output for field types.
+// TreeLine_mobile, a reader for the TreeLine desktop program.
+// Copyright (c) 2021, Douglas W. Bell.
+// Free software, GPL v2 or later.
+
 import 'dart:convert' show HtmlEscape;
 import 'package:intl/intl.dart' show DateFormat;
 import 'gen_number.dart';

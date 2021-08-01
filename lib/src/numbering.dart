@@ -1,3 +1,9 @@
+// numbering.dart, provides fomatting for section or outline based node numbering.
+// TreeLine_mobile, a reader for the TreeLine desktop program.
+// Copyright (c) 2021, Douglas W. Bell.
+// Free software, GPL v2 or later.
+
+/// A group of numbering sequences.
 class NumberingGroup {
   var basicFormats = <BasicNumbering>[];
   var isSectionStyle = false;
@@ -38,6 +44,7 @@ class NumberingGroup {
   }
 }
 
+/// A single numbering item.
 class BasicNumbering {
   var numFunction = _stringFromNum;
   var isUpperCase = true;

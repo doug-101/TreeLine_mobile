@@ -1,16 +1,26 @@
 # treeline_mobile
 
-A new Flutter project.
+This is a simple viewer for TreeLine files for Android devices.  It is written
+in Flutter, so it should be eay to create an IOS version, but I have no devices
+for testing.
 
-## Getting Started
+It is only a viewer - no editing is possible.
 
-This project is a starting point for a Flutter application.
+This supports most TreeLine formatting and field types, but it does have some
+limitations.  Internal links will not function.  Formatting using sibling
+pre/suffixes, such as internal bullets and tables, have not been implemented.
 
-A few resources to get you started if this is your first Flutter project:
+## Installation
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+An apk file is provided that can be downloaded to an Android device and run.
+This app is not yet in any app stores.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Usage
+
+Tap the File Browse button to open a TRLN file.  Tap on nodes to expand or
+collase them.  A long touch on a node shows a screen with detailed output for
+that node and its children.
+
+## TreeLine Info
+
+For more info on Treeline, see the [TreeLine homepage](http://treeline.bellz.org).

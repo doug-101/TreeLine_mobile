@@ -1,3 +1,8 @@
+// main.dart, the main user interface file.
+// TreeLine_mobile, a reader for the TreeLine desktop program.
+// Copyright (c) 2021, Douglas W. Bell.
+// Free software, GPL v2 or later.
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -11,6 +16,9 @@ void main() {
   ));
 }
 
+/// Provides a simle view with a button to allow file browsing.
+///
+/// Buttons for other ways of getting the file could be added in the future.
 class FileControl extends StatefulWidget {
   @override
   State<FileControl> createState() => _FileControlState();
@@ -49,6 +57,7 @@ class _FileControlState extends State<FileControl> {
   }
 }
 
+/// The main indented tree view.
 class TreeView extends StatefulWidget {
   final PlatformFile fileObj;
 
@@ -100,6 +109,7 @@ class _TreeViewState extends State<TreeView> {
     );
   }
 
+  /// The widgets for each node in the tree.
   List<Widget> _itemRows() {
     final items = <Widget>[];
     for (var rootSpot in _treeStructure.rootSpots()) {
@@ -110,6 +120,7 @@ class _TreeViewState extends State<TreeView> {
     return items;
   }
 
+  /// A single widget for a tree node.
   Widget _row(RankedSpot rankedSpot) {
     final node = rankedSpot.spotRef.nodeRef;
     final text = node.formatRef.formatTitle(node);
@@ -154,6 +165,7 @@ class _TreeViewState extends State<TreeView> {
   }
 }
 
+/// A detail view that shows node and child output after a long press.
 class _DetailView extends StatelessWidget {
   final TreeNode node;
 
@@ -202,6 +214,7 @@ class _DetailView extends StatelessWidget {
   }
 }
 
+/// Launches a clicked link in an external browser.
 void _launchURL(String? url, _, __, ___) async {
   if (url != null && await canLaunch(url)) {
     await launch(url);

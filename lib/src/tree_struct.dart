@@ -1,3 +1,8 @@
+// tree_struct.dart, provides node and format storage and definitions.
+// TreeLine_mobile, a reader for the TreeLine desktop program.
+// Copyright (c) 2021, Douglas W. Bell.
+// Free software, GPL v2 or later.
+
 import 'dart:io' show File;
 import 'dart:convert' show jsonDecode, HtmlEscape;
 

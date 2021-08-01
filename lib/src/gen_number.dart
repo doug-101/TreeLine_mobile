@@ -1,5 +1,11 @@
+// gen_number.dart, provides formatting of numeric field types.
+// TreeLine_mobile, a reader for the TreeLine desktop program.
+// Copyright (c) 2021, Douglas W. Bell.
+// Free software, GPL v2 or later.
+
 import 'dart:math';
 
+/// Formats a value including an exponent.
 String numString(num value, String strFormat) {
   var expPos = _charPos('eE', strFormat);
   if (expPos < 0) {
@@ -28,6 +34,7 @@ String numString(num value, String strFormat) {
       '${basicNumString(exp, expFormat)}';
 }
 
+/// Formats a number without an exponent.
 String basicNumString(num value, String strFormat) {
   var radix = _getRadix(strFormat);
   strFormat = _unescapeFormat(radix, strFormat);
