@@ -1,4 +1,4 @@
-# treeline_mobile
+# TreeLine_mobile
 
 This is a simple viewer for TreeLine files for Android devices.  It is written
 in Flutter, so it should be eay to create an IOS version, but I have no devices
